@@ -1,4 +1,4 @@
-// #define Many_SubTask
+#define Many_SubTask
 #include <bits/stdc++.h>
 using namespace std;
 #define int long long
@@ -10,19 +10,19 @@ using namespace std;
 #define mp make_pair
 const int mod = 998244353;
 const int inf = 1e18;
-const int MAXN = 1000005;
+const int MAXN = 2e5 + 5;
 
-void solve() {
+void solve(int TC, int tc){
     
 }
 
 signed main() {
     cin.sync_with_stdio(0), cin.tie(0);
-    int N = 1;
+    int TC = 1;
 #ifdef Many_SubTask
-    cin >> N;
+    cin >> TC;
 #endif
-    for (int i = 1; i <= N; i++) {
-        solve();
+    for (int tc = 1; tc <= TC; tc++) {
+        solve(TC, tc);
     }
 }
