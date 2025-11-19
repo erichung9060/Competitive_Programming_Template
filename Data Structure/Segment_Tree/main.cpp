@@ -1,72 +1,63 @@
-#define SegMode_Sum
-int a[MAXN], n, seg[MAXN * 4], lazy[MAXN * 4];
+#define MAXN 200005
 
 typedef struct Seg {
-    void push_down(int now, int l, int r) {
-        int L = now * 2, R = now * 2 + 1, val = lazy[now], mid = (l + r) / 2;
-        seg[L] += val;
-        seg[R] += val;
-        lazy[L] += val;
-        lazy[R] += val;
+    long long seg[MAXN * 4] = {0}, lazy[MAXN * 4] = {0};
+
+    void push_down(int now, int l, int r, int mid) {
+        int l_child = now * 2, r_child = now * 2 + 1;
+        int val = lazy[now];
+
+        seg[l_child] += val * (mid - l + 1);
+        seg[r_child] += val * (r - mid);
+        lazy[l_child] += val;
+        lazy[r_child] += val;
+        
         lazy[now] = 0;
     }
-    int calculate(int a, int b) {
-        #ifdef SegMode_Sum
-                return a + b;
-        #endif
-        #ifdef SegMode_Max
-                return max(a, b);
-        #endif
-        #ifdef SegMode_Min
-                return min(a, b);
-        #endif
-        #ifdef SegMode_Gcd
-                return gcd(a, b);
-        #endif
-        return -1;
-    }
 
-    void built(int now = 1, int l = 1, int r = n) {
+    void built(int *a, int l, int r, int now = 1) {
+        lazy[now] = 0;
+
         if (l == r) {
             seg[now] = a[l];
             return;
         }
         int mid = (l + r) / 2;
-        built(now * 2, l, mid);
-        built(now * 2 + 1, mid + 1, r);
+        built(a, l, mid, now * 2);
+        built(a, mid + 1, r, now * 2 + 1);
 
-        seg[now] = calculate(seg[now * 2], seg[now * 2 + 1]);
+        seg[now] = seg[now * 2] + seg[now * 2 + 1];
     }
 
-    void update(int lb, int rb, int val, int now = 1, int l = 1, int r = n) {
-        if (lb <= l && r <= rb) {
-            seg[now] += val;
+    void update(int ql, int qr, int val, int l, int r, int now = 1) {
+        if (ql <= l && r <= qr) {
+            seg[now] += val * (r - l + 1);
             lazy[now] += val;
             return;
         }
-
-        push_down(now, l, r);
-
         int mid = (l + r) / 2;
-        if (lb <= mid) update(lb, rb, val, now * 2, l, mid);
-        if (mid + 1 <= rb) update(lb, rb, val, now * 2 + 1, mid + 1, r);
 
-        seg[now] = calculate(seg[now * 2], seg[now * 2 + 1]);
+        push_down(now, l, r, mid);
+        
+        if (ql <= mid) update(ql, qr, val, l, mid, now * 2);
+        if (mid + 1 <= qr) update(ql, qr, val, mid + 1, r, now * 2 + 1);
+
+        seg[now] = seg[now * 2] + seg[now * 2 + 1];
     }
 
-    int query(int lb, int rb, int now = 1, int l = 1, int r = n) {
-        if (lb <= l && r <= rb) return seg[now];
-
-        push_down(now, l, r);
+    int query(int ql, int qr, int l, int r, int now = 1) {
+        if (ql <= l && r <= qr) return seg[now];
 
         int mid = (l + r) / 2;
-        if (rb <= mid) {
-            return query(lb, rb, now * 2, l, mid);
-        } else if (mid + 1 <= lb) {
-            return query(lb, rb, now * 2 + 1, mid + 1, r);
+
+        push_down(now, l, r, mid);
+        
+        if (qr <= mid) {
+            return query(ql, qr, l, mid, now * 2);
+        } else if (mid + 1 <= ql) {
+            return query(ql, qr, mid + 1, r, now * 2 + 1);
         } else {
-            return calculate(query(lb, rb, now * 2, l, mid),
-                             query(lb, rb, now * 2 + 1, mid + 1, r));
+            return query(ql, qr, l, mid, now * 2) + query(ql, qr, mid + 1, r, now * 2 + 1);
         }
     }
 } Seg;
@@ -74,20 +65,13 @@ typedef struct Seg {
 /*
 Usage:
     Seg seg;
-    seg.built();
-    seg.update(L, R, val);
-    seg.query(L, R)
-
-Decleared Variables:
-    a[]
-    n
+    seg.built(a, 1, n);
+    seg.update(ql, qr, val, 1, n);
+    seg.query(ql, qr, 1, n);
 
 Notice:
-    a[]: 1-base
     if occur segmentation fault, please put seg array and lazy array in Global.
-    don't declear n in main
 
 Needs To Do:
-    set SegMode by define [SegMode_Sum or SegMode_Max or SegMode_Min or SegMode_Gcd]
     define MAXN
 */
